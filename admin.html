@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel do T.I | Junqueiro</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin">
+  <header>
+    <div class="logo-area">
+      <img src="ti_logo.png" alt="Logo T.I" class="logo">
+      <h1>Painel do T.I | Junqueiro</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2 class="section-title">Chamados vistos</h2>
+    <select id="filtroSetor">
+      <option value="todos">Todos os Setores</option>
+    </select>
+    <div id="listaChamados"></div>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_DOMINIO.firebaseio.com",
+      projectId: "SEU_ID",
+      storageBucket: "SEU_BUCKET.appspot.com",
+      messagingSenderId: "SEU_SENDER_ID",
+      appId: "SUA_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const filtro = document.getElementById("filtroSetor");
+    const lista = document.getElementById("listaChamados");
+
+    db.ref("chamados").on("value", (snapshot) => {
+      const chamados = [];
+      const setores = new Set();
+      snapshot.forEach(child => {
+        const dado = child.val();
+        chamados.push(dado);
+        setores.add(dado.setor);
+      });
+
+      chamados.sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora));
+
+      filtro.innerHTML = '<option value="todos">Todos os Setores</option>';
+      setores.forEach(setor => {
+        const opt = document.createElement("option");
+        opt.value = setor;
+        opt.textContent = setor;
+        filtro.appendChild(opt);
+      });
+
+      renderizarChamados(chamados, "todos");
+      filtro.onchange = () => renderizarChamados(chamados, filtro.value);
+    });
+
+    function renderizarChamados(listaChamados, setorSelecionado) {
+      lista.innerHTML = "";
+      const filtrados = listaChamados.filter(c => setorSelecionado === "todos" || c.setor === setorSelecionado);
+      if (filtrados.length === 0) {
+        lista.innerHTML = '<p style="text-align:center;">Nenhum chamado encontrado.</p>';
+        return;
+      }
+      filtrados.forEach((c, i) => {
+        const div = document.createElement("div");
+        div.className = "chamado";
+        div.innerHTML = `
+          <h3>Chamado #${i + 1}</h3>
+          <p><strong>Data/Hora:</strong> ${c.dataHora}</p>
+          <p><strong>Nome:</strong> ${c.nome}</p>
+          <p><strong>Setor:</strong> ${c.setor}</p>
+          <p><strong>Tipo:</strong> ${c.tipo}</p>
+          <p><strong>Descrição:</strong> ${c.descricao}</p>
+        `;
+        lista.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

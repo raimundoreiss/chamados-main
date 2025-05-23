@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Suporte T.I | Junqueiro</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="logo-area">
+      <img src="ti_logo.png" alt="Logo T.I" class="logo">
+      <h1>Suporte T.I | Junqueiro</h1>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2 class="section-title">Abrir Chamado</h2>
+    <form id="formChamado">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" required>
+      <label for="setor">Setor:</label>
+      <input type="text" id="setor" required>
+      <label for="tipo">Tipo de Problema:</label>
+      <select id="tipo" required>
+        <option value="">Selecione</option>
+        <option value="Hardware">Hardware</option>
+        <option value="Software">Software</option>
+        <option value="Rede">Rede</option>
+        <option value="Outro">Outro</option>
+      </select>
+      <label for="descricao">Descrição:</label>
+      <textarea id="descricao" required></textarea>
+      <button type="submit">Enviar Chamado</button>
+      <p id="mensagem"></p>
+    </form>
+    <a class="link-admin" href="admin.html">Acesso do T.I</a>
+  </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_DOMINIO.firebaseio.com",
+      projectId: "SEU_ID",
+      storageBucket: "SEU_BUCKET.appspot.com",
+      messagingSenderId: "SEU_SENDER_ID",
+      appId: "SUA_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    document.getElementById("formChamado").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const dataHora = new Date().toLocaleString("pt-BR");
+      const chamado = {
+        nome: document.getElementById("nome").value,
+        setor: document.getElementById("setor").value,
+        tipo: document.getElementById("tipo").value,
+        descricao: document.getElementById("descricao").value,
+        dataHora: dataHora
+      };
+
+      db.ref("chamados").push(chamado)
+        .then(() => {
+          document.getElementById("mensagem").textContent = "Chamado enviado com sucesso!";
+          this.reset();
+        })
+        .catch(() => {
+          document.getElementById("mensagem").textContent = "Erro ao enviar chamado.";
+        });
+    });
+  </script>
+</body>
+</html>
